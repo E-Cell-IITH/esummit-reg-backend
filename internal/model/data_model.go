@@ -16,3 +16,8 @@ type RegistrationData struct {
 	About    string `json:"about"`
 	IDToken  string `json:"id_token"`
 }
+
+type RegistrationRequest struct {
+	Data  RegistrationData `json:data`
+	Token string           `json:token`
+}
