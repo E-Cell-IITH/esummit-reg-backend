@@ -137,7 +137,7 @@ func RegisterUserHandler(c *gin.Context) {
 	})
 
 	// 6. Update the OTP status
-	database.UpdateOtpStatus(req.Email);
+	database.UpdateOtpStatus(req.Email)
 
 	// 7. Send welcome email
 	// TODO: Implement this
