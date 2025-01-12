@@ -10,7 +10,7 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	"reg/internal/model"
 )
 
@@ -26,7 +26,7 @@ func New() {
 	}
 
 	// Initialize the database connection
-	dbConnection, err := sql.Open("sqlite3", dburl)
+	dbConnection, err := sql.Open("sqlite", dburl)
 	if err != nil {
 		log.Fatalf("Failed to open database connection: %v", err)
 	}
