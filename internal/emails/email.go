@@ -57,7 +57,7 @@ func SendEmail(to string, cc []string, subject string, body []byte) (bool, error
 
 
 func LoadOtpVerificationsTemplate(otp string) ([]byte, error) {
-	filePath := "internal/emails/templates/otp.html"
+	filePath := "templates/otp.html"
 	template, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err

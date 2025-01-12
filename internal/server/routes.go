@@ -24,12 +24,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 	s.POST("/register", controllers.RegisterHandler)
 
 	// E-Summit-2025
+
 	signup := s.Group("/signup")
 	signup.POST("", controllers.RegisterUserHandler)
-
 	signup.POST("/otp/send", controllers.SendOtpSignUP)
 	signup.POST("/otp/verify", controllers.VerifyOtpSignUP)
 
+
+	signin := s.Group("/signin")
+	signin.POST("", controllers.VerifyOtpSignIN)
+	signin.POST("/otp/send", controllers.SendOtpSignIN)
 
 	return s
 }
