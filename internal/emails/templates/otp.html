@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f7;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .email-header {
+      background-color: #4caf50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .email-body {
+      padding: 30px;
+      color: #333333;
+      line-height: 1.6;
+    }
+    .email-body h1 {
+      font-size: 24px;
+      margin: 0 0 10px;
+    }
+    .otp-box {
+      font-size: 20px;
+      font-weight: bold;
+      color: #4caf50;
+      text-align: center;
+      padding: 15px;
+      border: 2px dashed #4caf50;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .email-footer {
+      background-color: #f4f4f7;
+      color: #888888;
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .email-footer a {
+      color: #4caf50;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <!-- Header -->
+    <div class="email-header">
+      <h1>Verify Your Email Address</h1>
+    </div>
+    <!-- Body -->
+    <div class="email-body">
+      <p>Hi there,</p>
+      <p>Thank you for signing up. Please use the OTP below to verify your email address. This OTP is valid for the next 10 minutes.</p>
+      <div class="otp-box">[OTP]</div>
+      <p>If you didn’t request this, please ignore this email or contact support at <a href="mailto:esummit@ecelliith.org.in">esummit@ecelliith.org.in</a> if you have questions.</p>
+      <p>Cheers,<br>The Team</p>
+    </div>
+    <!-- Footer -->
+    <div class="email-footer">
+      <p>&copy; 2025 E-Cell, IIT Hyderabad. All rights reserved.</p>
+      <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+    </div>
+  </div>
+</body>
+</html>

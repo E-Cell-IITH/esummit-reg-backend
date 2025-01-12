@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"reg/internal/config"
 	"reg/internal/server"
 )
 
@@ -32,6 +33,9 @@ import (
 // }
 
 func main() {
+
+	config.InitLogger()
+	config.InitSMTP()
 
 	server := server.NewServer()
 

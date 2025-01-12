@@ -6,29 +6,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reg/internal/model"
 	"strconv"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
+	"reg/internal/model"
 )
-
-// type Service interface {
-//     // Health returns a map of health status information.
-//     Health() map[string]string
-
-//     // Close terminates the database connection.
-//     Close() error
-
-//     // Migrate handles creating/updating your database schema.
-//     Migrate() error
-
-//     // CreateRegistration inserts a new record into your registrations table.
-//     // Returns the newly created record’s ID and an error if something goes wrong.
-//     CreateRegistration(ctx context.Context, data model.RegistrationData) (int64, error)
-
-// }
 
 var (
 	dburl = os.Getenv("BLUEPRINT_DB_URL")
@@ -37,39 +21,50 @@ var (
 
 func New() {
 	if db != nil {
+		log.Println("Database already initialized")
 		return
 	}
 
+	// Initialize the database connection
 	dbConnection, err := sql.Open("sqlite3", dburl)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to open database connection: %v", err)
 	}
 
+	// Test the connection
+	if err := dbConnection.Ping(); err != nil {
+		log.Fatalf("Failed to ping database: %v", err)
+	}
+
+	// Assign the connection and run migrations
 	db = dbConnection
+	if err := Migrate(); err != nil {
+		log.Fatalf("Database migration failed: %v", err)
+	}
+
+	log.Println("Database successfully initialized")
 }
 
-// Health checks the health of the database connection by pinging the database.
-// It returns a map with keys indicating various health statistics.
+// Health checks the database health and returns health statistics.
 func Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	stats := make(map[string]string)
 
-	// Ping the database
+	// Check if the database connection is alive
 	err := db.PingContext(ctx)
 	if err != nil {
 		stats["status"] = "down"
-		stats["error"] = fmt.Sprintf("db down: %v", err)
-		log.Fatalf("db down: %v", err) // Log the error and terminate the program
+		stats["error"] = fmt.Sprintf("Database unreachable: %v", err)
+		log.Printf("Database health check failed: %v", err)
 		return stats
 	}
 
-	// Database is up, add more statistics
+	// Collect database statistics
 	stats["status"] = "up"
-	stats["message"] = "It's healthy"
+	stats["message"] = "Database is healthy"
 
-	// Get database stats (like open connections, in use, idle, etc.)
 	dbStats := db.Stats()
 	stats["open_connections"] = strconv.Itoa(dbStats.OpenConnections)
 	stats["in_use"] = strconv.Itoa(dbStats.InUse)
@@ -79,31 +74,27 @@ func Health() map[string]string {
 	stats["max_idle_closed"] = strconv.FormatInt(dbStats.MaxIdleClosed, 10)
 	stats["max_lifetime_closed"] = strconv.FormatInt(dbStats.MaxLifetimeClosed, 10)
 
-	// Evaluate stats to provide a health message
-	if dbStats.OpenConnections > 40 { // Arbitrary threshold example
-		stats["message"] = "The database is experiencing heavy load."
-	}
-
-	if dbStats.WaitCount > 1000 {
-		stats["message"] = "The database has a high number of wait events, indicating potential bottlenecks."
-	}
-
 	return stats
 }
 
-// Close closes the database connection.
-// It logs a message indicating the disconnection from the specific database.
-// If the connection is successfully closed, it returns nil.
-// If an error occurs while closing the connection, it returns the error.
+// Close terminates the database connection.
 func Close() error {
-	log.Printf("Disconnected from database: %s", dburl)
-	return db.Close()
+	if db != nil {
+		log.Printf("Closing database connection: %s", dburl)
+		return db.Close()
+	}
+	log.Println("Database connection is already closed or not initialized")
+	return nil
 }
 
-// Migrate creates (or updates) your database schema.
-// You can add more CREATE TABLE statements or run migrations as needed.
+// Migrate creates the required tables in the database.
 func Migrate() error {
-	createTableQuery := `
+	if db == nil {
+		return fmt.Errorf("database connection is not initialized")
+	}
+
+	// Define the schema creation queries
+	createRegistrationsTableQuery := `
     CREATE TABLE IF NOT EXISTS registrations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         sname TEXT,
@@ -121,37 +112,47 @@ func Migrate() error {
         about TEXT
     );
     `
-	_, err := db.Exec(createTableQuery)
+	createOtpsTableQuery := `
+    CREATE TABLE IF NOT EXISTS otps (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL UNIQUE, 
+        otp TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    `
+
+	// Execute the queries
+	_, err := db.Exec(createRegistrationsTableQuery)
 	if err != nil {
-		return fmt.Errorf("failed to create or verify registrations table: %w", err)
+		return fmt.Errorf("failed to create registrations table: %w", err)
 	}
+
+	_, err = db.Exec(createOtpsTableQuery)
+	if err != nil {
+		return fmt.Errorf("failed to create otps table: %w", err)
+	}
+
+	log.Println("Database migration completed successfully")
 	return nil
 }
 
-// CreateRegistration inserts a new record into the "registrations" table.
-// Returns the ID of the newly inserted record and an error if something goes wrong.
+// CreateRegistration inserts a new registration into the database.
 func CreateRegistration(ctx context.Context, data model.RegistrationData) (int64, error) {
+	if db == nil {
+		return 0, fmt.Errorf("database connection is not initialized")
+	}
+
 	query := `
-        INSERT INTO registrations (
-            sname, fname, pocname, contact, startup,
-            service, email, semail, ifocus, ayears,
-            location, city, about
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO registrations (
+        sname, fname, pocname, contact, startup,
+        service, email, semail, ifocus, ayears,
+        location, city, about
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 	result, err := db.ExecContext(ctx, query,
-		data.SName,
-		data.FName,
-		data.POCName,
-		data.Contact,
-		data.Startup,
-		data.Service,
-		data.Email,
-		data.SEmail,
-		data.IFocus,
-		data.AYears,
-		data.Location,
-		data.City,
-		data.About,
+		data.SName, data.FName, data.POCName, data.Contact, data.Startup,
+		data.Service, data.Email, data.SEmail, data.IFocus, data.AYears,
+		data.Location, data.City, data.About,
 	)
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert registration: %w", err)

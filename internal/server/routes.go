@@ -10,21 +10,23 @@ import (
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
-	r := gin.Default()
 
-	r.Use(cors.New(cors.Config{
+	s.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"}, // Add your frontend URL
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true, // Enable cookies/auth
 	}))
 
-	r.GET("/", s.HelloWorldHandler)
+	s.GET("/", s.HelloWorldHandler)
 
-	r.GET("/health", s.healthHandler)
-	r.POST("/register", controllers.RegisterHandler)
+	s.GET("/health", s.healthHandler)
+	s.POST("/register", controllers.RegisterHandler)
 
-	return r
+	// E-Summit-2025
+	s.POST("/otp/send", controllers.SendOtp)
+
+	return s
 }
 
 func (s *Server) HelloWorldHandler(c *gin.Context) {
