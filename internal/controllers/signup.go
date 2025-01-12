@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"reg/internal/cookies"
 	"reg/internal/database"
 	email "reg/internal/emails"
 	"reg/internal/model"
@@ -80,8 +81,16 @@ func VerifyOtpSignUP(c *gin.Context) {
 
 func RegisterUserHandler(c *gin.Context) {
 	// 1. Parse incoming JSON
-	var req model.User
+	type User struct {
+		Email string `json:"email"`
+		Name  string `json:"name"`
+		Data  string `json:"data"`
+		Otp   string `json:"otp"`
+	}
+
+	var req User
 	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
@@ -93,16 +102,43 @@ func RegisterUserHandler(c *gin.Context) {
 
 	}
 
-	// 3. Save user data
-	id, err := database.CreateUser(context.Background(), req)
+	// 3. Check weather the OTP is verified
+	if !database.VerifyOtp(req.Email, req.Otp) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "OTP not verified"})
+		return
+	}
+
+	// 4. Save user data
+	id, err := database.CreateUser(context.Background(), model.User{
+		Email: req.Email,
+		Name:  req.Name,
+		Data:  req.Data,
+	})
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
+	// 5. Generate Token
+	token, err := cookies.GenerateToken(int(id), req.Email)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
+
+	// 5. Set cookie
+	cookies.SetCookie(c.Writer, "session", token)
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User registered successfully",
 		"id":      id,
 	})
+
+	// 6. Update the OTP status
+	database.UpdateOtpStatus(req.Email);
+
+	// 7. Send welcome email
+	// TODO: Implement this
 }

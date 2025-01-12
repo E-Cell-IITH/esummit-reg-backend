@@ -9,10 +9,11 @@ import (
 func SaveOtp(email string, otp string) error {
 	// Save OTP in the "otps" table
 	_, err := db.Exec(`
-    INSERT INTO otps (email, otp, updated_at) 
-    VALUES (?, ?, DATETIME('now', 'localtime'))
+    INSERT INTO otps (email, otp, updated_at, is_expired) 
+    VALUES (?, ?, DATETIME('now', 'localtime'), FALSE)
     ON CONFLICT(email) DO UPDATE SET 
         otp = excluded.otp, 
+		is_expired = FALSE,
         updated_at = DATETIME('now', 'localtime')
 	`, email, otp)
 
@@ -30,7 +31,7 @@ func VerifyOtp(email, otp string) bool {
 	err := db.QueryRow(`
 		SELECT EXISTS(
 			SELECT 1 FROM otps 
-			WHERE email = ? AND otp = ? AND is_expired = FALSE AND updated_at >= datetime('now', 'localtime', '-10 minutes')
+			WHERE email = ? AND otp = ? AND is_expired = FALSE AND updated_at >= datetime('now', 'localtime', '-50 minutes')
 		)
 	`, email, otp).Scan(&exists)
 
@@ -40,4 +41,17 @@ func VerifyOtp(email, otp string) bool {
 	}
 
 	return exists
+}
+
+func UpdateOtpStatus(email string) error {
+	// Update the OTP status to expired
+	_, err := db.Exec(`
+	UPDATE otps SET is_expired = TRUE WHERE email = ?
+	`, email)
+
+	if err != nil {
+		return fmt.Errorf("failed to update OTP status: %w", err)
+	}
+
+	return nil
 }
