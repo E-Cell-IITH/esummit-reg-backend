@@ -112,13 +112,23 @@ func Migrate() error {
         about TEXT
     );
     `
-	createOtpsTableQuery := `
+	createQuery := `
     CREATE TABLE IF NOT EXISTS otps (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT NOT NULL UNIQUE, 
         otp TEXT NOT NULL,
+		is_expired BOOLEAN DEFAULT FALSE,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+	CREATE INDEX IF NOT EXISTS idx_otps_email ON otps(email);
+
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		email TEXT NOT NULL UNIQUE,
+		name TEXT NOT NULL,
+		data json
+	);
     `
 
 	// Execute the queries
@@ -127,7 +137,7 @@ func Migrate() error {
 		return fmt.Errorf("failed to create registrations table: %w", err)
 	}
 
-	_, err = db.Exec(createOtpsTableQuery)
+	_, err = db.Exec(createQuery)
 	if err != nil {
 		return fmt.Errorf("failed to create otps table: %w", err)
 	}

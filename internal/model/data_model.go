@@ -21,3 +21,10 @@ type RegistrationRequest struct {
 	Data  RegistrationData `json:data`
 	Token string           `json:token`
 }
+
+type User struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	Data  string `json:"data"`
+}
