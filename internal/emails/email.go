@@ -17,7 +17,7 @@ var (
 )
 
 func SendEmail(to string, cc []string, subject string, body []byte) (bool, error) {
-	fromName := "E-Cell x NPCI Hackathon"
+	fromName := "E-Summit x E-Cell IIT Hyderabad"
 	from := smtpUser
 	// Setup headers
 	headers := make(map[string]string)
