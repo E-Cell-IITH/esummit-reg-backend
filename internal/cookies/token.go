@@ -50,5 +50,8 @@ func ParseToken(tokenString string) (*Claims, error) {
 		return nil, fmt.Errorf("invalid token")
 	}
 
+	if claims.ExpiresAt < time.Now().Unix() {
+		return nil, fmt.Errorf("token has expired")
+	}
 	return claims, nil
 }

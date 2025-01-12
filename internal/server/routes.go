@@ -2,21 +2,29 @@ package server
 
 import (
 	"net/http"
+	"os"
 	"reg/internal/controllers"
 	"reg/internal/database"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
+	allowedOrigins := os.Getenv("ALLOW_DOMAINS")
+	if allowedOrigins == "" {
+		allowedOrigins = "http://localhost:3000"
+	}
+	origins := strings.Split(allowedOrigins, ",")
 
 	s.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, // Add your frontend URL
+		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true, // Enable cookies/auth
 	}))
+	s.Use(AuthMiddleware())
 
 	s.GET("/", s.HelloWorldHandler)
 
@@ -26,14 +34,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// E-Summit-2025
 
 	signup := s.Group("/signup")
-	signup.POST("", controllers.RegisterUserHandler)
-	signup.POST("/otp/send", controllers.SendOtpSignUP)
-	signup.POST("/otp/verify", controllers.VerifyOtpSignUP)
-
+	{
+		signup.POST("", controllers.RegisterUserHandler)
+		signup.POST("/otp/send", controllers.SendOtpSignUP)
+		signup.POST("/otp/verify", controllers.VerifyOtpSignUP)
+	}
 
 	signin := s.Group("/signin")
-	signin.POST("", controllers.VerifyOtpSignIN)
-	signin.POST("/otp/send", controllers.SendOtpSignIN)
+	{
+		signin.POST("", controllers.VerifyOtpSignIN)
+		signin.POST("/otp/send", controllers.SendOtpSignIN)
+	}
 
 	return s
 }
