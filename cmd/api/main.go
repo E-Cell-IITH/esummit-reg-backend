@@ -36,6 +36,7 @@ func main() {
 
 	config.InitLogger()
 	config.InitSMTP()
+	config.InitializeFirebase()
 
 	server := server.NewServer()
 

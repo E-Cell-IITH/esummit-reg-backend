@@ -9,9 +9,10 @@ import (
 	"strconv"
 	"time"
 
+	"reg/internal/model"
+
 	_ "github.com/joho/godotenv/autoload"
 	_ "modernc.org/sqlite"
-	"reg/internal/model"
 )
 
 var (
@@ -111,6 +112,16 @@ func Migrate() error {
         city TEXT,
         about TEXT
     );
+	
+	CREATE INDEX IF NOT EXISTS idx_registrations_email ON registrations(email);
+
+	CREATE TABLE IF NOT EXISTS pushed_registrations (
+    	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    	registration_id INTEGER NOT NULL,
+    	pushed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    	FOREIGN KEY (registration_id) REFERENCES registrations(id)
+	);
+
     `
 	createQuery := `
     CREATE TABLE IF NOT EXISTS otps (
@@ -175,3 +186,68 @@ func CreateRegistration(ctx context.Context, data model.RegistrationData) (int64
 
 	return id, nil
 }
+
+func GetRegistrationsYetToPush(ctx context.Context) ([]model.RegistrationData, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is not initialized")
+	}
+
+	query := `
+	SELECT id, sname, fname, pocname, contact, startup, service, email, semail, ifocus, ayears, location, city, about
+	FROM registrations
+	WHERE id NOT IN (SELECT registration_id FROM pushed_registrations)
+	`
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query registrations: %w", err)
+	}
+	defer rows.Close()
+
+	var registrations []model.RegistrationData
+	for rows.Next() {
+		var reg model.RegistrationData
+		err := rows.Scan(
+			&reg.Id,
+			&reg.SName, &reg.FName, &reg.POCName, &reg.Contact, &reg.Startup,
+			&reg.Service, &reg.Email, &reg.SEmail, &reg.IFocus, &reg.AYears,
+			&reg.Location, &reg.City, &reg.About,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan registration: %w", err)
+		}
+
+		registrations = append(registrations, reg)
+	}
+
+	return registrations, nil
+}
+
+func MarkRegistrationAsPushed(ctx context.Context, data []model.RegistrationData) error {
+	if db == nil {
+		return fmt.Errorf("database connection is not initialized")
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	insertQuery := `
+	INSERT INTO pushed_registrations (registration_id)
+	VALUES (?)
+	`
+	for _, reg := range data {
+		_, err := tx.ExecContext(ctx, insertQuery, reg.Id)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to insert pushed registration: %w", err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+

@@ -30,6 +30,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	s.GET("/health", s.healthHandler)
 	s.POST("/register", controllers.RegisterHandler)
+	s.POST("/update-startup-sheet", controllers.PostDataInGSheet)
 
 	// E-Summit-2025
 

@@ -1,6 +1,7 @@
 package model
 
 type RegistrationData struct {
+	Id       *int   `json:"id"`
 	SName    string `json:"sname"`
 	FName    string `json:"fname"`
 	POCName  string `json:"pocname"`
