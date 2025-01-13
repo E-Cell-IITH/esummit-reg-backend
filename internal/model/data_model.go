@@ -14,12 +14,11 @@ type RegistrationData struct {
 	Location string `json:"location"`
 	City     string `json:"city"`
 	About    string `json:"about"`
-	IDToken  string `json:"id_token"`
 }
 
 type RegistrationRequest struct {
-	Data  RegistrationData `json:data`
-	Token string           `json:token`
+	Data  RegistrationData `json:"data"`
+	Token string           `json:"token"`
 }
 
 type User struct {

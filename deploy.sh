@@ -3,6 +3,7 @@
 # The local Go main file, sql and environment file
 GO_MAIN_FILE="/Users/bhaskarmandal/Desktop/aa45/esummit-reg-backend/cmd/api/main.go"
 ENV_FILE=".env"
+SERVICE_FILE="serviceAccountKey.json"
 
 if [ -f ${ENV_FILE} ]; then
     set -o allexport
@@ -34,6 +35,7 @@ ssh "${VM_USER}@${VM_HOST}" "mkdir -p ${VM_PATH}" "mkdir -p ${VM_PATH}/templates
 echo "Copying files to the VM..."
 scp "${SERVICE_NAME}" "${VM_USER}@${VM_HOST}:${VM_PATH}/${SERVICE_NAME}"
 scp "${ENV_FILE}" "${VM_USER}@${VM_HOST}:${VM_PATH}/.env"
+scp "${SERVICE_FILE}" "${VM_USER}@${VM_HOST}:${VM_PATH}/serviceAccountKey.json"
 
 scp -r templates \
     "${VM_USER}@${VM_HOST}:${VM_PATH}"

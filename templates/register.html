@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Startup Fair 2025 Registration - E-Cell IITH</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fc;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 80%;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 40px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      color: #007bff;
+    }
+    .content {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .content p {
+      margin: 10px 0;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+    .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .details {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    .details table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .details th, .details td {
+      padding: 10px;
+      text-align: left;
+    }
+    .details th {
+      background-color: #007bff;
+      color: white;
+    }
+    .details tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .email-footer {
+      background-color: #f4f4f7;
+      color: #888888;
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .email-footer a {
+      color: #3081d9;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Startup Fair 2025 - E-Cell IITH</h1>
+    <p>Congratulations! Your registration has been successfully completed.</p>
+  </div>
+
+  <div class="content">
+    <p>Dear <strong>{{.Data.SName}}</strong>,</p>
+    <p>Thank you for registering for the Startup Fair 2025. We are thrilled to have you join us for this exciting event!</p>
+
+    <p>Here are your registration details:</p>
+    
+    <div class="details">
+      <table>
+        <tr>
+          <th>Name</th>
+          <td>{{.Data.SName}}</td>
+        </tr>
+        <tr>
+          <th>Startup Name</th>
+          <td>{{.Data.Startup}}</td>
+        </tr>
+        <tr>
+          <th>Contact</th>
+          <td>{{.Data.Contact}}</td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td>{{.Data.Email}}</td>
+        </tr>
+        <tr>
+          <th>Location</th>
+          <td>{{.Data.Location}}, {{.Data.City}}</td>
+        </tr>
+        <tr>
+          <th>Service Focus</th>
+          <td>{{.Data.Service}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <p>Our team will contact you as soon as possible with further details about the event.</p>
+    <p>If you need any assistance or have further questions, feel free to reach out to us at <a href="mailto:startupfair@ecelliith.org.in">startupfair@ecelliith.org.in</a>.</p>
+
+    <p>We look forward to seeing you at the event!</p>
+
+    <p>Sincerely,</p>
+    <p><strong>The E-Cell Team, IIT Hyderabad</strong></p>    
+  </div>
+  
+  <div class="email-footer">
+    <p>&copy; 2025 E-Cell, IIT Hyderabad. All rights reserved.</p>
+  </div>
+</div>
+
+</body>
+</html>
