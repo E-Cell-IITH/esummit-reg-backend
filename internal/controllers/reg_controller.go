@@ -20,7 +20,7 @@ import (
 func RegisterHandler(c *gin.Context) {
 	// 1. Parse incoming JSON
 	var req model.RegistrationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.Token == "" || req.Data.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}

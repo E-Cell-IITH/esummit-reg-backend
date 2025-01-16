@@ -14,7 +14,7 @@ import (
 
 func SendOtpSignIN(c *gin.Context) {
 	var req OtpRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
@@ -56,7 +56,7 @@ func SendOtpSignIN(c *gin.Context) {
 
 func VerifyOtpSignIN(c *gin.Context) {
 	var req OtpVerifyRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" || req.Otp == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}

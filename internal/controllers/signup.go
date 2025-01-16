@@ -23,7 +23,7 @@ type OtpVerifyRequest struct {
 
 func SendOtpSignUP(c *gin.Context) {
 	var req OtpRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
@@ -65,7 +65,7 @@ func SendOtpSignUP(c *gin.Context) {
 
 func VerifyOtpSignUP(c *gin.Context) {
 	var req OtpVerifyRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" || req.Otp == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
@@ -89,7 +89,7 @@ func RegisterUserHandler(c *gin.Context) {
 	}
 
 	var req User
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" || req.Name == "" || req.Otp == "" {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
