@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"reg/internal/cookies"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +19,7 @@ const (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Open routes that do not require authentication
-		if c.Request.URL.Path == "/signup" || c.Request.URL.Path == "/signin" || c.Request.URL.Path == "/health" || c.Request.URL.Path == "/register" || c.Request.URL.Path == "/update-startup-sheet" {
+		if strings.HasPrefix(c.Request.URL.Path, "/signup") || strings.HasPrefix(c.Request.URL.Path, "/signin") || c.Request.URL.Path == "/health" || c.Request.URL.Path == "/register" || c.Request.URL.Path == "/update-startup-sheet" || c.Request.URL.Path == "/" {
 			c.Next()
 			return
 		}
