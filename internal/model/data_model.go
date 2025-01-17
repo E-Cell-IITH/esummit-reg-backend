@@ -23,8 +23,9 @@ type RegistrationRequest struct {
 }
 
 type User struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-	Data  string `json:"data"`
+	ID            int    `json:"id"`
+	Email         string `json:"email"`
+	Name          string `json:"name"`
+	ContactNumber string `json:"contact_number"`
+	Data          string `json:"data"`
 }

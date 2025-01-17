@@ -138,7 +138,31 @@ func Migrate() error {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		email TEXT NOT NULL UNIQUE,
 		name TEXT NOT NULL,
+		contact_number TEXT,
 		data json
+	);
+
+	CREATE TABLE IF NOT EXISTS orders (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		razorpay_order_id TEXT UNIQUE NOT NULL,
+		user_id INTEGER NOT NULL,
+		amount REAL NOT NULL,
+		receipt TEXT,
+		status TEXT NOT NULL DEFAULT 'created',
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS payments (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		razorpay_payment_id TEXT UNIQUE NOT NULL,
+		user_id INTEGER NOT NULL,
+		razorpay_order_id TEXT NOT NULL,
+		amount REAL NOT NULL,
+		status TEXT NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (razorpay_order_id) REFERENCES orders(razorpay_order_id) ON DELETE CASCADE,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);
     `
 

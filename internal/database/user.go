@@ -77,3 +77,33 @@ func GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 
 	return &user, nil
 }
+
+func GetUserById(ctx context.Context, id int64) (*model.User, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is not initialized")
+	}
+
+	query := `
+	SELECT email, name, contact_number
+	FROM users
+	WHERE id = ?
+	`
+	row := db.QueryRowContext(ctx, query, id)
+
+	var user model.User
+	var dataJSON string
+	err := row.Scan(&user.Email, &user.Name, &dataJSON)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user with ID %d not found", id)
+		}
+		return nil, fmt.Errorf("failed to fetch user: %w", err)
+	}
+
+	err = json.Unmarshal([]byte(dataJSON), &user.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse user data: %w", err)
+	}
+
+	return &user, nil
+}

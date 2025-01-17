@@ -49,3 +49,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func GetUserID(c *gin.Context) (string, bool) {
+	userID, ok := c.Request.Context().Value(userIDKey).(string)
+	return userID, ok
+}
