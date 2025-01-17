@@ -138,7 +138,7 @@ func Migrate() error {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		email TEXT NOT NULL UNIQUE,
 		name TEXT NOT NULL,
-		contact_number TEXT,
+		contact_number TEXT NOT NULL,
 		data json
 	);
 

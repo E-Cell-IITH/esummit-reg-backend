@@ -1,6 +1,7 @@
 package paymentgateway
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,7 +18,6 @@ type PaymentInitiate struct {
 }
 
 func CreateOrder(c *gin.Context) {
-
 	var req PaymentInitiate
 	if err := c.ShouldBindJSON(&req); err != nil || req.Amount == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
@@ -25,7 +25,7 @@ func CreateOrder(c *gin.Context) {
 	}
 
 	userId, ok := server.GetUserID(c)
-	if !ok{
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: missing user ID"})
 		return
 	}
@@ -33,6 +33,12 @@ func CreateOrder(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Invalid user ID"})
+		return
+	}
+
+	user, err := database.GetUserById(context.Background(), int64(userIdInt))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error! While fetching user"})
 		return
 	}
 
@@ -68,5 +74,5 @@ func CreateOrder(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"order_id": orderID, "receipt": receipt})
+	c.JSON(http.StatusOK, gin.H{"order_id": orderID, "receipt": receipt, "contact_number": user.ContactNumber, "name": user.Name, "email": user.Email})
 }

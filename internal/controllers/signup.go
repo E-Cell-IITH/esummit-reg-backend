@@ -82,10 +82,11 @@ func VerifyOtpSignUP(c *gin.Context) {
 func RegisterUserHandler(c *gin.Context) {
 	// 1. Parse incoming JSON
 	type User struct {
-		Email string `json:"email"`
-		Name  string `json:"name"`
-		Data  string `json:"data"`
-		Otp   string `json:"otp"`
+		Email         string `json:"email"`
+		Name          string `json:"name"`
+		ContactNumber string `json:"contact_number"`
+		Data          string `json:"data"`
+		Otp           string `json:"otp"`
 	}
 
 	var req User
@@ -99,7 +100,6 @@ func RegisterUserHandler(c *gin.Context) {
 	if database.UserExists(req.Email) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
 		return
-
 	}
 
 	// 3. Check weather the OTP is verified
@@ -110,9 +110,10 @@ func RegisterUserHandler(c *gin.Context) {
 
 	// 4. Save user data
 	id, err := database.CreateUser(context.Background(), model.User{
-		Email: req.Email,
-		Name:  req.Name,
-		Data:  req.Data,
+		Email:         req.Email,
+		Name:          req.Name,
+		ContactNumber: req.ContactNumber,
+		Data:          req.Data,
 	})
 	if err != nil {
 		fmt.Println(err)

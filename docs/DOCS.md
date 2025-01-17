@@ -72,6 +72,7 @@
     {
         "email": "user@example.com",
         "name": "John Doe",
+        "contact_number": "9867666666",
         "data": "{\"college\":\"IITH\",\"roll\":\"MS22BTECH11010\"",
         "otp": "123456"
     }

@@ -20,10 +20,10 @@ func CreateUser(ctx context.Context, user model.User) (int64, error) {
 	}
 
 	query := `
-    INSERT INTO users (email, name, data)
-    VALUES (?, ?, ?)
+    INSERT INTO users (email, name, contact_number, data)
+    VALUES (?, ?, ?, ?)
     `
-	result, err := db.ExecContext(ctx, query, user.Email, user.Name, string(dataJSON))
+	result, err := db.ExecContext(ctx, query, user.Email, user.Name, user.ContactNumber, string(dataJSON))
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert user: %w", err)
 	}
@@ -54,7 +54,7 @@ func GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	}
 
 	query := `
-    SELECT id, email, name, data
+    SELECT id, email, name, contact_number data
     FROM users
     WHERE email = ?
     `
@@ -62,7 +62,7 @@ func GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 
 	var user model.User
 	var dataJSON string
-	err := row.Scan(&user.ID, &user.Email, &user.Name, &dataJSON)
+	err := row.Scan(&user.ID, &user.Email, &user.Name, &user.ContactNumber, &dataJSON)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("user with email %s not found", email)
@@ -91,18 +91,12 @@ func GetUserById(ctx context.Context, id int64) (*model.User, error) {
 	row := db.QueryRowContext(ctx, query, id)
 
 	var user model.User
-	var dataJSON string
-	err := row.Scan(&user.Email, &user.Name, &dataJSON)
+	err := row.Scan(&user.Email, &user.Name,&user.ContactNumber)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("user with ID %d not found", id)
 		}
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
-	}
-
-	err = json.Unmarshal([]byte(dataJSON), &user.Data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse user data: %w", err)
 	}
 
 	return &user, nil
