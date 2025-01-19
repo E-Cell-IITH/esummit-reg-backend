@@ -2,7 +2,6 @@ package cookies
 
 import (
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -13,11 +12,11 @@ func SetCookie(w http.ResponseWriter, name, value string) {
 		Name:     name,
 		Value:    value,
 		Path:     "/",
-		Domain:   os.Getenv("COOKIE_DOMAIN"), 
+		Domain:   "register.ecelliith.org.in",
 		Expires:  time.Now().Add(time.Duration(maxAge) * time.Second),
 		MaxAge:   maxAge,
-		HttpOnly: true,    
-		Secure:   true, 
+		HttpOnly: true,
+		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
 	})
 }
