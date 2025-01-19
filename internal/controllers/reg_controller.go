@@ -55,7 +55,7 @@ func RegisterHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	_, err = email.SendEmail(req.Data.Email, nil, "Registration Successful for Startup Fair 2025 | E-Cell IIT Hyderabad", body)
+	_, err = email.SendEmail(req.Data.Email, nil, "Registration Successful for Startup Fair 2025 | E-Cell IIT Hyderabad", body, os.Getenv("SMTP_REPLY_TO"))
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})

@@ -47,6 +47,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		signin.POST("/otp/send", controllers.SendOtpSignIN)
 	}
 
+	s.GET("/me", controllers.GetUserHandler)
+
 	return s
 }
 

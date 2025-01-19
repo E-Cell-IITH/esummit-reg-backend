@@ -54,7 +54,7 @@ func GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	}
 
 	query := `
-    SELECT id, email, name, contact_number data
+    SELECT id, email, name, contact_number, data
     FROM users
     WHERE email = ?
     `
