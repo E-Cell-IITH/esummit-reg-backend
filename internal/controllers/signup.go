@@ -90,7 +90,7 @@ func RegisterUserHandler(c *gin.Context) {
 	}
 
 	var req User
-	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" || req.Name == "" || req.Otp == "" || len(req.ContactNumber) != 10  {
+	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" || req.Name == "" || req.Otp == "" || len(req.ContactNumber) != 10 {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
@@ -141,5 +141,20 @@ func RegisterUserHandler(c *gin.Context) {
 	database.UpdateOtpStatus(req.Email)
 
 	// 7. Send welcome email
-	// TODO: Implement this
+	sendEmail(req.Email, req.Name)
+}
+
+func sendEmail(to string, name string) error {
+	// Email content
+	subject := "Welcome to E-Summit 2025 - ECell IIT Hyderabad!"
+	body := fmt.Sprintf("Dear %s,\n\nThank you for signing up for E-Summit 2025, hosted by E-Cell IIT Hyderabad! \n\nWe are thrilled to have you on board for this exciting journey filled with innovation, networking, and opportunities. To fully experience our events, don't forget to purchase your passes.\n\n👉 Buy your passes now at: https://ecell.iith.ac.in/esummit/tickets\n\nWe can't wait to see you at the summit!\n\nWarm regards,  \nTeam E-Cell IIT Hyderabad  \nE-Summit 2025", name)
+
+	// Format the email message
+	// message := fmt.Sprintf("Subject: %s\n\n%s", subject, body)
+	ok, err := email.SendEmail(to, nil, subject, []byte(body), "")
+	if !ok {
+		return err
+	}
+
+	return nil
 }

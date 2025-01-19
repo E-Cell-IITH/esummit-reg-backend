@@ -61,6 +61,12 @@ func VerifyOtpSignIN(c *gin.Context) {
 		return
 	}
 
+	// Verify User
+	if !database.UserExists(req.Email) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User does not exists"})
+		return
+	}
+
 	// 1. Verify OTP
 	if !database.VerifyOtp(req.Email, req.Otp) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP"})

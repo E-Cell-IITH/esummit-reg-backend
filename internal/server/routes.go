@@ -48,6 +48,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}
 
 	s.GET("/me", controllers.GetUserHandler)
+	s.GET("/logout", controllers.LogoutHandler)
 
 	return s
 }

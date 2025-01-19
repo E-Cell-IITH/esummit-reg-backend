@@ -91,7 +91,7 @@ func GetUserById(ctx context.Context, id int64) (*model.User, error) {
 	row := db.QueryRowContext(ctx, query, id)
 
 	var user model.User
-	err := row.Scan(&user.Email, &user.Name,&user.ContactNumber)
+	err := row.Scan(&user.Email, &user.Name, &user.ContactNumber)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("user with ID %d not found", id)
@@ -100,4 +100,36 @@ func GetUserById(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	return &user, nil
+}
+
+func GetMeUser(ctx context.Context, id int64) (*model.User, int, error) {
+	if db == nil {
+		return nil, -1, fmt.Errorf("database connection is not initialized")
+	}
+
+	query := `
+	SELECT 
+    	u.name,
+    	u.email,
+    	u.contact_number,
+    	COALESCE(pt.ticket_id, '-1') AS ticket_id
+	FROM 
+    	users u
+	LEFT JOIN 
+    	purchased_tickets pt ON u.id = pt.user_id 
+	WHERE u.id = ?;
+	`
+	row := db.QueryRowContext(ctx, query, id)
+
+	var user model.User
+	var ticketID int
+	err := row.Scan(&user.Email, &user.Name, &user.ContactNumber, &ticketID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, -1, fmt.Errorf("user with ID %d not found", id)
+		}
+		return nil, -1, fmt.Errorf("failed to fetch user: %w", err)
+	}
+
+	return &user, ticketID, nil
 }

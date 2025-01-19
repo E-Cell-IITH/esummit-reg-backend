@@ -27,7 +27,7 @@ func GetUserHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := database.GetUserById(context.Background(), int64(id))
+	user,ticketId, err := database.GetMeUser(context.Background(), int64(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
@@ -36,6 +36,12 @@ func GetUserHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User found",
 		"user":    user,
+		"ticketId": ticketId,
 	  })
 	  
+}
+
+func LogoutHandler(c *gin.Context) {
+	c.SetCookie("session", "", -1, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }

@@ -164,6 +164,29 @@ func Migrate() error {
 		FOREIGN KEY (razorpay_order_id) REFERENCES orders(razorpay_order_id) ON DELETE CASCADE,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);
+
+	CREATE TABLE IF NOT EXISTS tickets (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT NOT NULL,
+		description TEXT,
+		price REAL NOT NULL,
+		quantity INTEGER,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS purchased_tickets (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		ticket_id TEXT UNIQUE NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
+	);
+
+	INSERT INTO tickets (name, description, price) VALUES
+		('STANDARD', 'All Speaker Sessions, Startup Fair, Food Carnival', 699),
+		('VALUE FOR MONEY', 'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator', 999),
+		('PREMIUM',  'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator, Networking Dinner, Accommodation, (2 Days 1 Night)', 1699);
     `
 
 	// Execute the queries
