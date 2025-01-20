@@ -5,6 +5,7 @@ import (
 	"os"
 	"reg/internal/controllers"
 	"reg/internal/database"
+	paymentgateway "reg/internal/payment_gateway"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -49,6 +50,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	s.GET("/me", controllers.GetUserHandler)
 	s.GET("/logout", controllers.LogoutHandler)
+
+	s.POST("/paymentInitiate", paymentgateway.CreateOrder)
+	s.POST("/transactionID", paymentgateway.PushTransactionIds)
 
 	return s
 }

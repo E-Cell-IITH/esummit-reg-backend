@@ -56,3 +56,8 @@ func GetUserID(c *gin.Context) (string, bool) {
 	userID, ok := c.Request.Context().Value(constants.UserIDKey).(string)
 	return userID, ok
 }
+
+func GetUserEmail(c *gin.Context) (string, bool) {
+	email, ok := c.Request.Context().Value(constants.EmailKey).(string)
+	return email, ok
+}

@@ -48,6 +48,19 @@ func UserExists(email string) bool {
 	return exists
 }
 
+func UserExistsByID(id string) bool {
+	// Check if the user exists in the "users" table
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)", id).Scan(&exists)
+	if err != nil {
+		fmt.Println(err)
+		log.Printf("Failed to check if user exists: %v\n", err)
+		return false
+	}
+
+	return exists
+}
+
 func GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is not initialized")

@@ -4,17 +4,21 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
+	constants "reg/internal/const"
 	"reg/internal/database"
-	"reg/internal/server"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	razorpay "github.com/razorpay/razorpay-go"
 )
 
 type PaymentInitiate struct {
 	Amount float64 `json:"amount"`
+	TxnId  string  `json:"txn_id"`
+}
+
+func getUserID(c *gin.Context) (string, bool) {
+	userID, ok := c.Request.Context().Value(constants.UserIDKey).(string)
+	return userID, ok
 }
 
 func CreateOrder(c *gin.Context) {
@@ -24,55 +28,62 @@ func CreateOrder(c *gin.Context) {
 		return
 	}
 
-	userId, ok := server.GetUserID(c)
+	userId, ok := getUserID(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: missing user ID"})
 		return
 	}
-	userIdInt, err := strconv.Atoi(userId)
 
+	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Invalid user ID"})
 		return
 	}
 
-	user, err := database.GetUserById(context.Background(), int64(userIdInt))
+	user, ticketId, err := database.GetMeUser(context.Background(), int64(userIdInt))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error! While fetching user"})
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
-	client := razorpay.NewClient(os.Getenv("RAZORPAY_API_KEY"), os.Getenv("RAZORPAY_API_SECRET"))
-	cnt, err := database.GetCountOfOrders()
-	if err != nil {
-		fmt.Println("error in getting count of orders", err)
-		cnt = 0 // set some random number
-	}
-	cnt = cnt + 1
-	receipt := fmt.Sprintf("order#%d", cnt)
-	data := map[string]interface{}{
-		"amount":   req.Amount,
-		"currency": "INR",
-		"receipt":  receipt,
-	}
+	// Create a new order
+	id, err := database.InitiatePayment(req.Amount, userIdInt)
 
-	order, err := client.Order.Create(data, nil)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error! While initiating payment"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create order"})
 		return
 	}
 
-	orderID, ok := order["id"].(string)
+	c.JSON(http.StatusOK, gin.H{"order_id": id, "message": "User found",
+		"user":     user,
+		"ticketId": ticketId})
+}
+
+func PushTransactionIds(c *gin.Context) {
+	var req PaymentInitiate
+	if err := c.ShouldBindJSON(&req); err != nil || req.Amount == 0 || req.TxnId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		return
+	}
+
+	userId, ok := getUserID(c)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error! Invalid order ID"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: missing user ID"})
 		return
 	}
-	_, err = database.CreateOrder(int64(userIdInt), orderID, req.Amount, receipt)
 
+	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error! While saving order"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Invalid user ID"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"order_id": orderID, "receipt": receipt, "contact_number": user.ContactNumber, "name": user.Name, "email": user.Email})
+	id, err := database.CreatePaymentRecord(req.TxnId, userIdInt, req.Amount)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to push transaction ID"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Transaction ID add successfully", "payment_id": id})
 }

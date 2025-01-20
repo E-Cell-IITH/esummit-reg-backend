@@ -1,26 +1,24 @@
 package database
 
-func CreateOrder(userID int64, razorpayOrderID string, amount float64, receipt string) (int64, error) {
-	result, err := db.Exec(`INSERT INTO orders (razorpay_order_id, user_id, amount, receipt) VALUES (?, ?, ?, ?)`,
-		razorpayOrderID, userID, amount, receipt)
+func InitiatePayment(amount float64, userId int) (int64, error) {
+	result, err := db.Exec(`INSERT INTO payments_initiate (amount, user_id) VALUES (?, ?)`, amount, userId)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
 }
 
-func RecordPayment(razorpayPaymentID, razorpayOrderID string, userID int, amount float64, status string) (int64, error) {
-    result, err := db.Exec(`INSERT INTO payments (razorpay_payment_id, razorpay_order_id, amount, status, user_id) VALUES (?, ?, ?, ?, ?)`,
-        razorpayPaymentID, razorpayOrderID, amount, status, userID)
-    if err != nil {
-        return 0, err
-    }
-    return result.LastInsertId()
+func CreatePaymentRecord(txnId string, userID int, amount float64) (int64, error) {
+	result, err := db.Exec(`INSERT INTO transactions (id, user_id, amount) VALUES (?, ?, ?)`, txnId, userID, amount)
+	if err != nil {
+		return 0, err
+	}
+	return result.LastInsertId()
 }
 
 func GetCountOfOrders() (int, error) {
 	var count int
-	err := db.QueryRow(`SELECT COUNT(*) FROM orders`).Scan(&count)
+	err := db.QueryRow(`SELECT COUNT(*) FROM transactions`).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
