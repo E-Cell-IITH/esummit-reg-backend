@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 func GetUserHandler(c *gin.Context) {
 	// Get user id from context
 	fmt.Println(c.Request.Context())
@@ -27,21 +26,24 @@ func GetUserHandler(c *gin.Context) {
 		return
 	}
 
-	user,ticketId, err := database.GetMeUser(context.Background(), int64(id))
+	user, ticketId, err := database.GetMeUser(context.Background(), int64(id))
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "User found",
-		"user":    user,
+		"message":  "User found",
+		"user":     user,
 		"ticketId": ticketId,
-	  })
-	  
+	})
+
 }
 
 func LogoutHandler(c *gin.Context) {
-	c.SetCookie("session", "", -1, "/", "", false, true)
+
+	// c.SetCookie("session", "", 1, "/", "", false, true)
+	// cookies.SetCookie(c.Writer, "session", "l", 0)
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }

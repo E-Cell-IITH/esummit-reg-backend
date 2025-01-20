@@ -130,31 +130,37 @@ func RegisterUserHandler(c *gin.Context) {
 	}
 
 	// 5. Set cookie
-	cookies.SetCookie(c.Writer, "session", token)
+	// cookies.SetCookie(c.Writer, "session", token, 0)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User registered successfully",
 		"id":      id,
+		"token":   token,
 	})
 
 	// 6. Update the OTP status
 	database.UpdateOtpStatus(req.Email)
 
 	// 7. Send welcome email
-	sendEmail(req.Email, req.Name)
-}
-
-func sendEmail(to string, name string) error {
-	// Email content
-	subject := "Welcome to E-Summit 2025 - ECell IIT Hyderabad!"
-	body := fmt.Sprintf("Dear %s,\n\nThank you for signing up for E-Summit 2025, hosted by E-Cell IIT Hyderabad! \n\nWe are thrilled to have you on board for this exciting journey filled with innovation, networking, and opportunities. To fully experience our events, don't forget to purchase your passes.\n\n👉 Buy your passes now at: https://ecell.iith.ac.in/esummit/tickets\n\nWe can't wait to see you at the summit!\n\nWarm regards,  \nTeam E-Cell IIT Hyderabad  \nE-Summit 2025", name)
-
-	// Format the email message
-	// message := fmt.Sprintf("Subject: %s\n\n%s", subject, body)
-	ok, err := email.SendEmail(to, nil, subject, []byte(body), "")
-	if !ok {
-		return err
+	body, err :=email.LoadSignUpVerificationTemplate(req.Name)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-
-	return nil
+	email.SendEmail(req.Email, nil, "Welcome to E-Summit 2025 | E-Cell IIT Hyderabad!", body, "")
 }
+
+// func sendEmail(to string, name string) error {
+// 	// Email content
+// 	subject := "Welcome to E-Summit 2025 - ECell IIT Hyderabad!"
+// 	body := fmt.Sprintf("Dear %s,\n\nThank you for signing up for E-Summit 2025, hosted by E-Cell IIT Hyderabad! \n\nWe are thrilled to have you on board for this exciting journey filled with innovation, networking, and opportunities. To fully experience our events, don't forget to purchase your passes.\n\n👉 Buy your passes now at: https://ecell.iith.ac.in/esummit/tickets\n\nWe can't wait to see you at the summit!\n\nWarm regards,  \nTeam E-Cell IIT Hyderabad  \nE-Summit 2025", name)
+
+// 	// Format the email message
+// 	// message := fmt.Sprintf("Subject: %s\n\n%s", subject, body)
+// 	ok, err := email.SendEmail(to, nil, subject, []byte(body), "")
+// 	if !ok {
+// 		return err
+// 	}
+
+// 	return nil
+// }

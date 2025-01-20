@@ -89,6 +89,7 @@ func VerifyOtpSignIN(c *gin.Context) {
 		return
 	}
 
-	cookies.SetCookie(c.Writer, "session", token)
-	c.JSON(http.StatusOK, gin.H{"message": "OTP verified successfully"})
+	// cookies.SetCookie(c.Writer, "session", token, 0)
+
+	c.JSON(http.StatusOK, gin.H{"message": "OTP verified successfully", "token": token})
 }

@@ -95,3 +95,27 @@ func LoadRegistrationTemplate(data model.RegistrationRequest) ([]byte, error) {
 	// Return the rendered HTML content as a byte slice
 	return renderedContent.Bytes(), nil
 }
+
+func LoadSignUpVerificationTemplate(name string) ([]byte, error) {
+	filePath := "templates/signup.html"
+	tmplContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpl, err := template.New("signup").Parse(string(tmplContent))
+	if err != nil {
+		return nil, err
+	}
+
+	var renderedContent bytes.Buffer
+
+	// Execute the template with the registration data and write to the buffer
+	err = tmpl.Execute(&renderedContent, name)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the rendered HTML content as a byte slice
+	return renderedContent.Bytes(), nil
+}
