@@ -136,7 +136,7 @@ func GetMeUser(ctx context.Context, id int64) (*model.User, int, error) {
 
 	var user model.User
 	var ticketID int
-	err := row.Scan(&user.Email, &user.Name, &user.ContactNumber, &ticketID)
+	err := row.Scan(&user.Name, &user.Email, &user.ContactNumber, &ticketID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, -1, fmt.Errorf("user with ID %d not found", id)

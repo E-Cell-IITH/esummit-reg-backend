@@ -172,7 +172,7 @@ func Migrate() error {
 	CREATE TABLE IF NOT EXISTS purchased_tickets (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
-		ticket_id TEXT UNIQUE NOT NULL,
+		ticket_id TEXT NOT NULL,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 		FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
