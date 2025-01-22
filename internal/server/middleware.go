@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	constants "reg/internal/const"
@@ -19,8 +18,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-
-		fmt.Printf("%s", c.GetHeader("Authorization"))
 
 		// Get the Authorization header
 		authHeader := c.GetHeader("Authorization")

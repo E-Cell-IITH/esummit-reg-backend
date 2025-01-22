@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-Summit 2025 Pass Confirmation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        background-color: #0047ab;
+        color: white;
+        padding: 10px;
+        border-radius: 8px 8px 0 0;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 20px;
+      }
+      .content p {
+        margin: 10px 0;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+        color: #555;
+      }
+      .footer a {
+        color: #0047ab;
+        text-decoration: none;
+      }
+      .email-footer {
+        background-color: #f4f4f7;
+        color: #888888;
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>E-Summit 2025</h1>
+      </div>
+      <div class="content">
+        <p>Hey <strong>{{.Name}}</strong>,</p>
+
+        <p>
+          Thank you for purchasing passes for <strong>E-Summit 2025</strong>,
+          organized by the
+          <strong>Entrepreneurship Cell, IIT Hyderabad</strong>. We are thrilled
+          to have you join us for this exciting event!
+        </p>
+
+        <p><strong>Event Details:</strong></p>
+        <ul>
+          <li><strong>Event Dates:</strong> 8th - 9th February 2025</li>
+          <li><strong>Ticket Type:</strong> {{.TicketType}}</li>
+          <li><strong>Price:</strong> ₹{{.Price}}</li>
+        </ul>
+
+        <p>
+          We will send you the event passes a few days before the event. Please
+          stay tuned for updates via email. In the meantime, feel free to
+          explore more about the event on our website.
+        </p>
+
+        <p>If you have any questions, don't hesitate to reach out to us.</p>
+
+        <p>Looking forward to seeing you at the E-Summit 2025!</p>
+        <p>Best regards,</p>
+        <p><strong>Team E-Cell, IIT Hyderabad</strong></p>
+      </div>
+      <div class="footer">
+        <p>
+          For any queries, contact us at
+          <a href="mailto:esummit@ecelliith.org.in">esummit@ecelliith.org.in</a>
+        </p>
+      </div>
+      <div class="email-footer">
+        <p>&copy; 2025 E-Cell, IIT Hyderabad. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

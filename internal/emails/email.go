@@ -103,19 +103,39 @@ func LoadSignUpVerificationTemplate(name string) ([]byte, error) {
 		return nil, err
 	}
 
-	tmpl, err := template.New("signup").Parse(string(tmplContent))
+	htmlContent := string(tmplContent)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.name}}", name)
+
+	return []byte(htmlContent), nil
+}
+
+func LoadPurchasedTicketTemplate(name, title, amount string) ([]byte, error) {
+	filePath := "templates/tickets_purchased.html"
+	tmplContent, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var renderedContent bytes.Buffer
+	htmlContent := string(tmplContent)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.Name}}", name)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.TicketType}}", title)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.Price}}", amount)
 
-	// Execute the template with the registration data and write to the buffer
-	err = tmpl.Execute(&renderedContent, name)
+	return []byte(htmlContent), nil
+}
+
+
+func LoadPendingTemplate(name, txnId, amount string) ([]byte, error) {
+	filePath := "templates/pending.html"
+	tmplContent, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	// Return the rendered HTML content as a byte slice
-	return renderedContent.Bytes(), nil
+	htmlContent := string(tmplContent)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.Name}}", name)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.TransactionID}}", txnId)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.Price}}", amount)
+
+	return []byte(htmlContent), nil
 }

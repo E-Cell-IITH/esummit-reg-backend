@@ -6,6 +6,7 @@ import (
 	"net/http"
 	constants "reg/internal/const"
 	"reg/internal/database"
+	emails "reg/internal/emails"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -84,6 +85,34 @@ func PushTransactionIds(c *gin.Context) {
 		return
 	}
 
+	user, err := database.GetUserById(context.Background(), int64(userIdInt))
+	if err != nil {
+		fmt.Println("TAKE ACTION>>>>>>>>>>>>>>>>>>> FOR ID: ", userIdInt)
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+	}
+
+	// if amount is -1
+	if req.Amount == -1 {
+		err := database.AddTickets(userIdInt, req.Amount)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add tickets", "err": err})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "Tickets purchased successfully"})
+
+		//SEND EMAIL
+		data, err := emails.LoadPurchasedTicketTemplate(user.Name, "STANDARD", "Free")
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("TAKE ACTION>>>>>>>>>>>>>>>>>>> FOR ID: ", userIdInt)
+		}
+
+		emails.SendEmail(user.Email, nil, "Your E-Summit 2025 Pass Confirmation", data, "")
+		return
+	}
+
 	id, err := database.CreatePaymentRecord(req.TxnId, userIdInt, req.Amount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to push transaction ID"})
@@ -96,6 +125,14 @@ func PushTransactionIds(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Transaction ID add successfully", "payment_id": id})
+	//SEND EMAIL
+	data, err := emails.LoadPendingTemplate(user.Name, req.TxnId, fmt.Sprintf("%.2f", req.Amount))
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("TAKE ACTION>>>>>>>>>>>>>>>>>>> FOR ID: ", userIdInt)
+	}
+
+	emails.SendEmail(user.Email, nil, "Payment Confirmation Pending for E-Summit 2025", data, "")
 }
 
 func AddSuccessfulTxnIds(c *gin.Context) {
@@ -128,7 +165,7 @@ func AddSuccessfulTxnIds(c *gin.Context) {
 		return
 	}
 
-	if res ==45 {
+	if res == 45 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Already verified"})
 		return
 	}
@@ -137,9 +174,24 @@ func AddSuccessfulTxnIds(c *gin.Context) {
 	err = database.AddTickets(id, req.Amount)
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add tickets"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add tickets", "err": err})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Transaction ID verified successfully", "userId": id})
+	//SEND EMAIL
+	user, err := database.GetUserById(context.Background(), int64(id))
+
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("TAKE ACTION>>>>>>>>>>>>>>>>>>> FOR ID: ", id)
+	}
+
+	data, err := emails.LoadPurchasedTicketTemplate(user.Name, "VALUE FOR MONEY", fmt.Sprintf("%.2f", req.Amount))
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("TAKE ACTION>>>>>>>>>>>>>>>>>>> FOR ID: ", id)
+	}
+
+	emails.SendEmail(user.Email, nil, "Your E-Summit 2025 Pass Confirmation", data, "")
 }

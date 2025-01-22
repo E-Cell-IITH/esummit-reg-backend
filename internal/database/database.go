@@ -176,13 +176,13 @@ func Migrate() error {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 		FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
-	);
+	);`
 
-	INSERT INTO tickets (name, description, price) VALUES
-		('STANDARD', 'All Speaker Sessions, Startup Fair, Food Carnival', 699),
-		('VALUE FOR MONEY', 'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator', 999),
-		('PREMIUM',  'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator, Networking Dinner, Accommodation, (2 Days 1 Night)', 1699);
-    `
+	// INSERT INTO tickets (name, description, price) VALUES
+	// 	('STANDARD', 'All Speaker Sessions, Startup Fair, Food Carnival', -1),
+	// 	('VALUE FOR MONEY', 'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator', 399),
+	// 	('PREMIUM',  'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator, Networking Dinner, Accommodation, (2 Days 1 Night)', 999);
+    // `
 
 	// Execute the queries
 	_, err := db.Exec(createRegistrationsTableQuery)
