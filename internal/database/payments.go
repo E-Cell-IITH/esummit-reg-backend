@@ -2,7 +2,9 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"log"
 )
 
 func InitiatePayment(amount float64, userId int) (int64, error) {
@@ -13,7 +15,7 @@ func InitiatePayment(amount float64, userId int) (int64, error) {
 	return result.LastInsertId()
 }
 
-func CreatePaymentRecord(txnId string, userID int, amount float64) (int64, error) {
+func CreatePaymentRecord(txnId string, userID int, amount float64, ticketTitle string, isAccommodation bool) (int64, error) {
 	// First, check if a record with the same txnId already exists
 	var exists int
 	err := db.QueryRow(`SELECT 1 FROM transactions WHERE id = ?`, txnId).Scan(&exists)
@@ -25,7 +27,7 @@ func CreatePaymentRecord(txnId string, userID int, amount float64) (int64, error
 		return -1, nil
 	}
 
-	result, err := db.Exec(`INSERT INTO transactions (id, user_id, amount) VALUES (?, ?, ?)`, txnId, userID, amount)
+	result, err := db.Exec(`INSERT INTO transactions (id, user_id, amount, ticket_title, isAccommodation) VALUES (?, ?, ?, ?, ?)`, txnId, userID, amount, ticketTitle, isAccommodation)
 	if err != nil {
 		return 0, err
 	}
@@ -69,8 +71,13 @@ func AddSuccessfulTxnIds(txnId string, amount float64) (int, int, error) {
 
 	var alreadyVerified int
 	err = db.QueryRow(qAlreadyVerified, txnId).Scan(&alreadyVerified)
+
 	if err != nil {
-		return -1, 0, fmt.Errorf("select error: %w", err)
+		if err == sql.ErrNoRows {
+			alreadyVerified = 0
+		} else {
+			return -1, 0, fmt.Errorf("select error while querying qAlreadyVerified: %w", err)
+		}
 	}
 
 	if alreadyVerified == 1 {
@@ -85,20 +92,55 @@ func AddSuccessfulTxnIds(txnId string, amount float64) (int, int, error) {
 	var result, userId int
 	err = db.QueryRow(qSelect, txnId, txnId).Scan(&result, &userId)
 	if err != nil {
-		return -1, 0, fmt.Errorf("select error: %w", err)
+		return -1, 0, fmt.Errorf("select error while querying qSelect: %w", err)
 	}
 
 	return result, userId, nil
 }
 
-func AddTickets(user_id int, amount float64) error {
-	_, err := db.Exec(`
-		INSERT INTO purchased_tickets (user_id, ticket_id)
-		VALUES (?, (SELECT id FROM tickets WHERE price = ? LIMIT 1))
-	`, user_id, amount)
+func AddTickets(userID int, txnID string) (string, error) {
+	var (
+		ticketTitle     string
+		price           float64
+		isAccommodation bool
+	)
 
+	query := `
+		SELECT ticket_title, amount, isAccommodation
+		FROM transactions
+		WHERE id = ? AND user_id = ? AND is_verified = TRUE
+	`
+	err := db.QueryRow(query, txnID, userID).Scan(&ticketTitle, &price, &isAccommodation)
 	if err != nil {
-		return err
+		if errors.Is(err, sql.ErrNoRows) {
+			return ticketTitle,  fmt.Errorf("transaction not found or not verified")
+		}
+		return ticketTitle, err
 	}
+
+	insertQuery := `
+		INSERT INTO purchased_tickets (user_id, ticket_title, price, isAccommodation)
+		VALUES (?, ?, ?, ?)
+	`
+	_, err = db.Exec(insertQuery, userID, ticketTitle, price, isAccommodation)
+	if err != nil {
+		return ticketTitle, fmt.Errorf("failed to add ticket: %v", err)
+	}
+
+	log.Printf("Ticket successfully added for user %d with transaction ID %s", userID, txnID)
+	return ticketTitle, nil
+}
+
+func AddBasicTickets(userID int, ticketTitle string) error {
+	insertQuery := `
+		INSERT INTO purchased_tickets (user_id, ticket_title, price, isAccommodation)
+		VALUES (?, ?, ?, ?)
+	`
+	_, err := db.Exec(insertQuery, userID, ticketTitle, -1, false)
+	if err != nil {
+		return fmt.Errorf("failed to add ticket: %v", err)
+	}
+
+	log.Printf("Ticket successfully added for user %d", userID)
 	return nil
 }

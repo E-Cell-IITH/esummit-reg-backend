@@ -122,10 +122,11 @@ func GetMeUser(ctx context.Context, id int64) (*model.User, int, error) {
 
 	query := `
 	SELECT 
+		u.id,
     	u.name,
     	u.email,
     	u.contact_number,
-    	COALESCE(pt.ticket_id, '-1') AS ticket_id
+    	COALESCE(pt.id, '-1') AS ticket_id
 	FROM 
     	users u
 	LEFT JOIN 
@@ -136,10 +137,10 @@ func GetMeUser(ctx context.Context, id int64) (*model.User, int, error) {
 
 	var user model.User
 	var ticketID int
-	err := row.Scan(&user.Name, &user.Email, &user.ContactNumber, &ticketID)
+	err := row.Scan( &user.ID ,&user.Name, &user.Email, &user.ContactNumber, &ticketID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, -1, fmt.Errorf("user with ID %d not found", id)
+			return nil, -1, fmt.Errorf("no user found")
 		}
 		return nil, -1, fmt.Errorf("failed to fetch user: %w", err)
 	}

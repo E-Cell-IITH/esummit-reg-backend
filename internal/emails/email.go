@@ -135,7 +135,7 @@ func LoadPendingTemplate(name, txnId, amount string) ([]byte, error) {
 	htmlContent := string(tmplContent)
 	htmlContent = strings.ReplaceAll(htmlContent, "{{.Name}}", name)
 	htmlContent = strings.ReplaceAll(htmlContent, "{{.TransactionID}}", txnId)
-	htmlContent = strings.ReplaceAll(htmlContent, "{{.Price}}", amount)
+	htmlContent = strings.ReplaceAll(htmlContent, "{{.Amount}}", amount)
 
 	return []byte(htmlContent), nil
 }

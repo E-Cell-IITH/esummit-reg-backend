@@ -29,6 +29,10 @@ func GetUserHandler(c *gin.Context) {
 	user, ticketId, err := database.GetMeUser(context.Background(), int64(id))
 	if err != nil {
 		fmt.Println(err)
+		if err.Error() == "no user found" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}

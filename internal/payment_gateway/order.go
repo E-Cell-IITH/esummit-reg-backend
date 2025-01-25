@@ -15,6 +15,8 @@ import (
 type PaymentInitiate struct {
 	Amount float64 `json:"amount"`
 	TxnId  string  `json:"txn_id"`
+	Title  string  `json:"title"`
+	IsAccommodation bool `json:"isAccommodation"`
 }
 
 func getUserID(c *gin.Context) (string, bool) {
@@ -69,6 +71,7 @@ func CreateOrder(c *gin.Context) {
 func PushTransactionIds(c *gin.Context) {
 	var req PaymentInitiate
 	if err := c.ShouldBindJSON(&req); err != nil || req.Amount == 0 || req.TxnId == "" {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
@@ -94,7 +97,7 @@ func PushTransactionIds(c *gin.Context) {
 
 	// if amount is -1
 	if req.Amount == -1 {
-		err := database.AddTickets(userIdInt, req.Amount)
+		err := database.AddBasicTickets(userIdInt, req.Title)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add tickets", "err": err})
@@ -113,14 +116,14 @@ func PushTransactionIds(c *gin.Context) {
 		return
 	}
 
-	id, err := database.CreatePaymentRecord(req.TxnId, userIdInt, req.Amount)
+	id, err := database.CreatePaymentRecord(req.TxnId, userIdInt, req.Amount, req.Title, req.IsAccommodation)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to push transaction ID"})
 		return
 	}
 
 	if id == -1 {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Transaction ID already exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Transaction ID already exists"})
 		return
 	}
 
@@ -171,7 +174,7 @@ func AddSuccessfulTxnIds(c *gin.Context) {
 	}
 
 	//Update tickets table
-	err = database.AddTickets(id, req.Amount)
+	title, err := database.AddTickets(id, req.TxnId)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add tickets", "err": err})
@@ -187,7 +190,7 @@ func AddSuccessfulTxnIds(c *gin.Context) {
 		fmt.Println("TAKE ACTION>>>>>>>>>>>>>>>>>>> FOR ID: ", id)
 	}
 
-	data, err := emails.LoadPurchasedTicketTemplate(user.Name, "VALUE FOR MONEY", fmt.Sprintf("%.2f", req.Amount))
+	data, err := emails.LoadPurchasedTicketTemplate(user.Name, title, fmt.Sprintf("%.2f", req.Amount))
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("TAKE ACTION>>>>>>>>>>>>>>>>>>> FOR ID: ", id)

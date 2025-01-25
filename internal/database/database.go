@@ -156,26 +156,20 @@ func Migrate() error {
 		user_id INTEGER NOT NULL,
 		is_verified BOOLEAN DEFAULT FALSE,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		ticket_title TEXT NOT NULL,
+		isAccommodation BOOLEAN DEFAULT FALSE,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 		PRIMARY KEY (id)
-	);
-
-	CREATE TABLE IF NOT EXISTS tickets (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		description TEXT,
-		price REAL NOT NULL,
-		quantity INTEGER,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 
 	CREATE TABLE IF NOT EXISTS purchased_tickets (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
-		ticket_id TEXT NOT NULL,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-		FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
+		ticket_title TEXT NOT NULL,
+		price REAL NOT NULL,
+		isAccommodation BOOLEAN DEFAULT FALSE,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
 
 	// INSERT INTO tickets (name, description, price) VALUES
