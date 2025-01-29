@@ -53,6 +53,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	s.POST("/paymentInitiate", paymentgateway.CreateOrder)
 	s.POST("/transactionID", paymentgateway.PushTransactionIds)
+	s.GET("/verify/:code", paymentgateway.HandleCopounVerifications)
 
 	admin := s.Group("/admin")
 	{
