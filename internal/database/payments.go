@@ -15,7 +15,7 @@ func InitiatePayment(amount float64, userId int) (int64, error) {
 	return result.LastInsertId()
 }
 
-func CreatePaymentRecord(txnId string, userID int, amount float64, ticketTitle string, isAccommodation bool) (int64, error) {
+func CreatePaymentRecord(txnId string, userID int, amount float64, ticketTitle string, isAccommodation bool, coupon string) (int64, error) {
 	// First, check if a record with the same txnId already exists
 	var exists int
 	err := db.QueryRow(`SELECT 1 FROM transactions WHERE id = ?`, txnId).Scan(&exists)
@@ -27,7 +27,7 @@ func CreatePaymentRecord(txnId string, userID int, amount float64, ticketTitle s
 		return -1, nil
 	}
 
-	result, err := db.Exec(`INSERT INTO transactions (id, user_id, amount, ticket_title, isAccommodation) VALUES (?, ?, ?, ?, ?)`, txnId, userID, amount, ticketTitle, isAccommodation)
+	result, err := db.Exec(`INSERT INTO transactions (id, user_id, amount, ticket_title, isAccommodation, coupon) VALUES (?, ?, ?, ?, ?, ?)`, txnId, userID, amount, ticketTitle, isAccommodation, coupon)
 	if err != nil {
 		return 0, err
 	}
@@ -103,26 +103,27 @@ func AddTickets(userID int, txnID string) (string, error) {
 		ticketTitle     string
 		price           float64
 		isAccommodation bool
+		coupon          string
 	)
 
 	query := `
-		SELECT ticket_title, amount, isAccommodation
+		SELECT ticket_title, amount, isAccommodation, coupon
 		FROM transactions
 		WHERE id = ? AND user_id = ? AND is_verified = TRUE
 	`
-	err := db.QueryRow(query, txnID, userID).Scan(&ticketTitle, &price, &isAccommodation)
+	err := db.QueryRow(query, txnID, userID).Scan(&ticketTitle, &price, &isAccommodation, &coupon)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return ticketTitle,  fmt.Errorf("transaction not found or not verified")
+			return ticketTitle, fmt.Errorf("transaction not found or not verified")
 		}
 		return ticketTitle, err
 	}
 
 	insertQuery := `
-		INSERT INTO purchased_tickets (user_id, ticket_title, price, isAccommodation)
-		VALUES (?, ?, ?, ?)
+		INSERT INTO purchased_tickets (user_id, ticket_title, price, isAccommodation, coupon)
+		VALUES (?, ?, ?, ?, ?)
 	`
-	_, err = db.Exec(insertQuery, userID, ticketTitle, price, isAccommodation)
+	_, err = db.Exec(insertQuery, userID, ticketTitle, price, isAccommodation, coupon)
 	if err != nil {
 		return ticketTitle, fmt.Errorf("failed to add ticket: %v", err)
 	}

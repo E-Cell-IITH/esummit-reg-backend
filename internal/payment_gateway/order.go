@@ -17,6 +17,7 @@ type PaymentInitiate struct {
 	TxnId  string  `json:"txn_id"`
 	Title  string  `json:"title"`
 	IsAccommodation bool `json:"isAccommodation"`
+	CouponCode string `json:"couponCode"`
 }
 
 func getUserID(c *gin.Context) (string, bool) {
@@ -116,7 +117,11 @@ func PushTransactionIds(c *gin.Context) {
 		return
 	}
 
-	id, err := database.CreatePaymentRecord(req.TxnId, userIdInt, req.Amount, req.Title, req.IsAccommodation)
+	couponCode := ""
+	if req.CouponCode != "" {
+		couponCode = req.CouponCode
+	}
+	id, err := database.CreatePaymentRecord(req.TxnId, userIdInt, req.Amount, req.Title, req.IsAccommodation, couponCode)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to push transaction ID"})
 		return

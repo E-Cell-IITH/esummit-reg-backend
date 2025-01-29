@@ -158,6 +158,7 @@ func Migrate() error {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		ticket_title TEXT NOT NULL,
 		isAccommodation BOOLEAN DEFAULT FALSE,
+		coupon TEXT DEFAULT "",
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 		PRIMARY KEY (id)
 	);
@@ -169,6 +170,7 @@ func Migrate() error {
 		ticket_title TEXT NOT NULL,
 		price REAL NOT NULL,
 		isAccommodation BOOLEAN DEFAULT FALSE,
+		coupon TEXT DEFAULT "",
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
 
