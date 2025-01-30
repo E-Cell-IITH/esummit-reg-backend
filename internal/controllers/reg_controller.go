@@ -96,7 +96,7 @@ func PostDataInGSheet(c *gin.Context) {
 		return
 	}
 
-	reg_data, err := database.GetRegistrationsYetToPush(context.Background())
+	reg_data, err := database.GetPurchasedTickets(context.Background())
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
@@ -110,7 +110,7 @@ func PostDataInGSheet(c *gin.Context) {
 	}
 
 	// Mark the registrations as pushed
-	err = database.MarkRegistrationAsPushed(context.Background(), reg_data)
+	err = database.MarkTicketAsPushed(context.Background(), reg_data)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to mark registrations as pushed"})
@@ -118,7 +118,6 @@ func PostDataInGSheet(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Data written to Google Sheets successfully"})
-
 }
 
 func isAdmin(email, admins string) bool {
@@ -131,7 +130,7 @@ func isAdmin(email, admins string) bool {
 	return false
 }
 
-func writeToGSheet(data []model.RegistrationData) error {
+func writeToGSheet(data []model.PurchasedTicket) error {
 	clientOption := option.WithCredentialsFile("service-account.json")
 	srv, err := sheets.NewService(context.Background(), clientOption)
 	if err != nil {

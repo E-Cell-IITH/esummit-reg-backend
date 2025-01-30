@@ -172,6 +172,12 @@ func Migrate() error {
 		isAccommodation BOOLEAN DEFAULT FALSE,
 		coupon TEXT DEFAULT "",
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	);
+	CREATE TABLE IF NOT EXISTS pushed_purchased_tickets (
+    	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    	pushed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		ticket_id INTEGER NOT NULL,
+    	FOREIGN KEY (ticket_id) REFERENCES purchased_tickets(id)
 	);`
 
 	// INSERT INTO tickets (name, description, price) VALUES
@@ -258,6 +264,72 @@ func GetRegistrationsYetToPush(ctx context.Context) ([]model.RegistrationData, e
 	}
 
 	return registrations, nil
+}
+
+func GetPurchasedTickets(ctx context.Context) ([]model.PurchasedTicket, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is not initialized")
+	}
+
+	query := `
+	SELECT id, user_id, ticket_title, price, isAccommodation, coupon
+	FROM purchased_tickets
+	WHERE id NOT IN (SELECT ticket_id FROM pushed_purchased_tickets)
+	`
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query purchased tickets: %w", err)
+	}
+	defer rows.Close()
+
+	var tickets []model.PurchasedTicket
+	for rows.Next() {
+		var ticket model.PurchasedTicket
+		err := rows.Scan(
+			&ticket.ID,
+			&ticket.UserID,
+			&ticket.TicketTitle,
+			&ticket.Price,
+			&ticket.IsAccommodation,
+			&ticket.Coupon,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan purchased ticket: %w", err)
+		}
+
+		tickets = append(tickets, ticket)
+	}
+
+	return tickets, nil
+}
+
+func MarkTicketAsPushed(ctx context.Context, data []model.PurchasedTicket) error {
+	if db == nil {
+		return fmt.Errorf("database connection is not initialized")
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	insertQuery := `
+	INSERT INTO pushed_purchased_tickets (ticket_id)
+	VALUES (?)
+	`
+	for _, ticket := range data {
+		_, err := tx.ExecContext(ctx, insertQuery, ticket.ID)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to insert pushed ticket: %w", err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func MarkRegistrationAsPushed(ctx context.Context, data []model.RegistrationData) error {

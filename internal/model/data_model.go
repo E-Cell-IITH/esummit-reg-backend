@@ -29,3 +29,12 @@ type User struct {
 	ContactNumber string `json:"contact_number"`
 	Data          string `json:"data"`
 }
+
+type PurchasedTicket struct {
+	ID              int64   `json:"id"`
+	UserID          int64   `json:"user_id"`
+	TicketTitle     string  `json:"ticket_title"`
+	Price           float64 `json:"price"`
+	IsAccommodation bool    `json:"is_accommodation"`
+	Coupon          string  `json:"coupon"`
+}
