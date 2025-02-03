@@ -3,9 +3,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"reg/internal/config"
 	"reg/internal/database"
 	email "reg/internal/emails"
@@ -88,6 +88,7 @@ func PostDataInGSheet(c *gin.Context) {
 		return
 	}
 	email := token.Claims["email"].(string)
+	fmt.Println("This guy tried to access the data: ", email)
 	admins := os.Getenv("ADMIN_EMAILS")
 
 	// Check if the email is an admin
@@ -130,27 +131,36 @@ func isAdmin(email, admins string) bool {
 	return false
 }
 
-func writeToGSheet(data []model.PurchasedTicket) error {
+// writeToGSheet writes data to Google Sheets
+func writeToGSheet(data []model.PurchasedTicketWithUser) error {
 	clientOption := option.WithCredentialsFile("service-account.json")
 	srv, err := sheets.NewService(context.Background(), clientOption)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Sheets client: %v", err)
 	}
 
-	spreadsheetId := os.Getenv("GOOGLE_SHEET_ID")
+	spreadsheetID := os.Getenv("GOOGLE_SHEET_ID")
 	writeRange := "Sheet1!A1"
 
 	var vr sheets.ValueRange
+
 	for _, reg := range data {
-		var row []interface{}
-		val := reflect.ValueOf(reg)
-		for i := 0; i < val.NumField(); i++ {
-			row = append(row, val.Field(i).Interface())
+		row := []interface{}{
+			reg.ID,
+			reg.UserID,
+			reg.TicketTitle,
+			reg.Price,
+			reg.IsAccommodation,
+			reg.Coupon,
+			reg.User.Email,
+			reg.User.Name,
+			reg.User.ContactNumber,
 		}
+
 		vr.Values = append(vr.Values, row)
 	}
 
-	_, err = srv.Spreadsheets.Values.Append(spreadsheetId, writeRange, &vr).
+	_, err = srv.Spreadsheets.Values.Append(spreadsheetID, writeRange, &vr).
 		ValueInputOption("RAW").
 		InsertDataOption("INSERT_ROWS").
 		Do()
@@ -159,5 +169,6 @@ func writeToGSheet(data []model.PurchasedTicket) error {
 		return fmt.Errorf("unable to write data to sheet: %v", err)
 	}
 
+	log.Println("✅ Data successfully written to Google Sheets")
 	return nil
 }

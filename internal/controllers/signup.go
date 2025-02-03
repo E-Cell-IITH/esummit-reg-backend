@@ -9,6 +9,7 @@ import (
 	email "reg/internal/emails"
 	"reg/internal/model"
 	"reg/internal/utils"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,6 +28,7 @@ func SendOtpSignUP(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
+	req.Email = strings.ToLower(req.Email)
 
 	// if user already exists
 	if database.UserExists(req.Email) {
@@ -69,6 +71,7 @@ func VerifyOtpSignUP(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
+	req.Email = strings.ToLower(req.Email)
 
 	// 1. Verify OTP
 	if !database.VerifyOtp(req.Email, req.Otp) {
@@ -95,6 +98,7 @@ func RegisterUserHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
+	req.Email = strings.ToLower(req.Email)
 
 	// 2. Check if the user already exists
 	if database.UserExists(req.Email) {
@@ -110,7 +114,7 @@ func RegisterUserHandler(c *gin.Context) {
 
 	// 4. Save user data
 	id, err := database.CreateUser(context.Background(), model.User{
-		Email:         req.Email,
+		Email:         strings.ToLower(req.Email),
 		Name:          req.Name,
 		ContactNumber: req.ContactNumber,
 		Data:          req.Data,
@@ -142,7 +146,7 @@ func RegisterUserHandler(c *gin.Context) {
 	database.UpdateOtpStatus(req.Email)
 
 	// 7. Send welcome email
-	body, err :=email.LoadSignUpVerificationTemplate(req.Name)
+	body, err := email.LoadSignUpVerificationTemplate(req.Name)
 	if err != nil {
 		fmt.Println(err)
 		return

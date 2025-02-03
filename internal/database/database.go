@@ -266,15 +266,16 @@ func GetRegistrationsYetToPush(ctx context.Context) ([]model.RegistrationData, e
 	return registrations, nil
 }
 
-func GetPurchasedTickets(ctx context.Context) ([]model.PurchasedTicket, error) {
+func GetPurchasedTickets(ctx context.Context) ([]model.PurchasedTicketWithUser, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is not initialized")
 	}
 
 	query := `
-	SELECT id, user_id, ticket_title, price, isAccommodation, coupon
-	FROM purchased_tickets
-	WHERE id NOT IN (SELECT ticket_id FROM pushed_purchased_tickets)
+	SELECT pt.id, pt.user_id, pt.ticket_title, pt.price, pt.isAccommodation, pt.coupon, u.email, u.name, u.contact_number, u.data
+	FROM purchased_tickets pt
+	JOIN users u ON pt.user_id = u.id
+	WHERE pt.id NOT IN (SELECT ticket_id FROM pushed_purchased_tickets)
 	`
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -282,9 +283,9 @@ func GetPurchasedTickets(ctx context.Context) ([]model.PurchasedTicket, error) {
 	}
 	defer rows.Close()
 
-	var tickets []model.PurchasedTicket
+	var tickets []model.PurchasedTicketWithUser
 	for rows.Next() {
-		var ticket model.PurchasedTicket
+		var ticket model.PurchasedTicketWithUser
 		err := rows.Scan(
 			&ticket.ID,
 			&ticket.UserID,
@@ -292,6 +293,10 @@ func GetPurchasedTickets(ctx context.Context) ([]model.PurchasedTicket, error) {
 			&ticket.Price,
 			&ticket.IsAccommodation,
 			&ticket.Coupon,
+			&ticket.User.Email,
+			&ticket.User.Name,
+			&ticket.User.ContactNumber,
+			&ticket.User.Data,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan purchased ticket: %w", err)
@@ -303,7 +308,7 @@ func GetPurchasedTickets(ctx context.Context) ([]model.PurchasedTicket, error) {
 	return tickets, nil
 }
 
-func MarkTicketAsPushed(ctx context.Context, data []model.PurchasedTicket) error {
+func MarkTicketAsPushed(ctx context.Context, data []model.PurchasedTicketWithUser) error {
 	if db == nil {
 		return fmt.Errorf("database connection is not initialized")
 	}

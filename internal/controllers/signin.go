@@ -8,6 +8,7 @@ import (
 	"reg/internal/database"
 	email "reg/internal/emails"
 	"reg/internal/utils"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +19,7 @@ func SendOtpSignIN(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
+	req.Email = strings.ToLower(req.Email)
 
 	// if user not exists
 	if !database.UserExists(req.Email) {
@@ -60,6 +62,7 @@ func VerifyOtpSignIN(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
+	req.Email = strings.ToLower(req.Email)
 
 	// Verify User
 	if !database.UserExists(req.Email) {
