@@ -178,7 +178,16 @@ func Migrate() error {
     	pushed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		ticket_id INTEGER NOT NULL,
     	FOREIGN KEY (ticket_id) REFERENCES purchased_tickets(id)
-	);`
+	);
+	CREATE TABLE IF NOT EXISTS pushed_txn (
+    	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    	pushed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		txn_id TEXT NOT NULL,
+    	FOREIGN KEY (txn_id) REFERENCES transactions(id)
+	);
+	
+	
+	`
 
 	// INSERT INTO tickets (name, description, price) VALUES
 	// 	('STANDARD', 'All Speaker Sessions, Startup Fair, Food Carnival', -1),

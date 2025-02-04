@@ -5,6 +5,7 @@ GO_MAIN_FILE="/Users/bhaskarmandal/Desktop/aa45/esummit-reg-backend/cmd/api/main
 ENV_FILE=".env"
 SERVICE_FILE="serviceAccountKey.json"
 SERVICE_FILE_2="service-account.json"
+PY_SCRIPT="writeToSheet.py"
 
 if [ -f ${ENV_FILE} ]; then
     set -o allexport
@@ -38,6 +39,7 @@ scp "${SERVICE_NAME}" "${VM_USER}@${VM_HOST}:${VM_PATH}/${SERVICE_NAME}"
 scp "${ENV_FILE}" "${VM_USER}@${VM_HOST}:${VM_PATH}/.env"
 scp "${SERVICE_FILE}" "${VM_USER}@${VM_HOST}:${VM_PATH}/serviceAccountKey.json"
 scp "${SERVICE_FILE_2}" "${VM_USER}@${VM_HOST}:${VM_PATH}/service-account.json"
+scp "${PY_SCRIPT}" "${VM_USER}@${VM_HOST}:${VM_PATH}/${PY_SCRIPT}"
 
 scp -r templates \
     "${VM_USER}@${VM_HOST}:${VM_PATH}"
