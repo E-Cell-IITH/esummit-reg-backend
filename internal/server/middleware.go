@@ -14,7 +14,7 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Open routes that do not require authentication
-		if c.Request.URL.Path == "/logout" || strings.HasPrefix(c.Request.URL.Path, "/signup") || strings.HasPrefix(c.Request.URL.Path, "/signin") || c.Request.URL.Path == "/health" || c.Request.URL.Path == "/register" || c.Request.URL.Path == "/update-startup-sheet" {
+		if c.Request.URL.Path == "/passes" ||  c.Request.URL.Path == "/logout" || strings.HasPrefix(c.Request.URL.Path, "/signup") || strings.HasPrefix(c.Request.URL.Path, "/signin") || c.Request.URL.Path == "/health" || c.Request.URL.Path == "/register" || c.Request.URL.Path == "/update-startup-sheet" {
 			c.Next()
 			return
 		}

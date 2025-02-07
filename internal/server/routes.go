@@ -60,6 +60,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		admin.POST("/transactionID", paymentgateway.AddSuccessfulTxnIds)
 	}
 
+	s.GET(("/passes"), controllers.SendPassesHandler)
+
 	return s
 }
 

@@ -40,3 +40,10 @@ type PurchasedTicketWithUser struct {
 	User            User    `json:"user"`
 }
 
+type UserTicket struct {
+	ID          int
+	Name        string
+	Email       string
+	TicketTitle string
+	UID         string //unique id
+}

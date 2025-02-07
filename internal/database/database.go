@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"reg/internal/model"
@@ -193,7 +194,7 @@ func Migrate() error {
 	// 	('STANDARD', 'All Speaker Sessions, Startup Fair, Food Carnival', -1),
 	// 	('VALUE FOR MONEY', 'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator', 399),
 	// 	('PREMIUM',  'All Speaker Sessions, Startup Fair, Food Carniva, Fetching Fortune Spectator, Networking Dinner, Accommodation, (2 Days 1 Night)', 999);
-    // `
+	// `
 
 	// Execute the queries
 	_, err := db.Exec(createRegistrationsTableQuery)
@@ -375,3 +376,36 @@ func MarkRegistrationAsPushed(ctx context.Context, data []model.RegistrationData
 	return nil
 }
 
+func GetIDsForPasses() []model.UserTicket {
+
+	query := `
+		SELECT u.id, u.name, u.email, pt.ticket_title 
+		FROM purchased_tickets pt
+		JOIN users u ON pt.user_id = u.id
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var userTickets []model.UserTicket
+
+	for rows.Next() {
+		var ut model.UserTicket
+		if err := rows.Scan(&ut.ID, &ut.Name, &ut.Email, &ut.TicketTitle); err != nil {
+			log.Fatal(err)
+		}
+		trimmedTitle := strings.ReplaceAll(strings.TrimSpace(ut.TicketTitle), " ", "_")
+		ut.UID = fmt.Sprintf("%d_%s_%s_GUEST", ut.ID, strings.ToUpper(trimmedTitle), strings.ToLower(ut.Email))
+		userTickets = append(userTickets, ut)
+	}
+
+	// Check for errors from iteration
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return userTickets
+}
