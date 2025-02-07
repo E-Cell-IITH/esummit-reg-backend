@@ -377,12 +377,71 @@ func MarkRegistrationAsPushed(ctx context.Context, data []model.RegistrationData
 }
 
 func GetIDsForPasses() []model.UserTicket {
+	// List of email addresses extracted from the logs
+	emailedUsers := []string{
+		"kaizeltech@gmail.com",
+		"nrhitesh111@gmail.com",
+		"gyaani2004@gmail.com",
+		"Jaswanthkumar431@gmail.com",
+		"mailforpraveen999@gmail.com",
+		"sreeja.darlz@gmail.com",
+		"tejavishnu2000@gmail.com",
+		"deepak08925@gmail.com",
+		"dasarirahulpatel.drp@gmail.com",
+		"kartheekdama2004@gmail.com",
+		"varshitha03@gmail.com",
+		"manojkiranb98@gmail.com",
+		"mukeshchowdar777@gmail.com",
+		"ravitejareddy875@gmail.com",
+		"shivakotagiri532@gmail.com",
+		"kevinpaul468@gmail.com",
+		"akshayabejgum05@gmail.com",
+		"Kaizeltech@gmail.com",
+		"nishnabandari@gmail.com",
+		"arkalavarshitha37@gmail.com",
+		"likhitharambha@gmail.com",
+		"mechinenil@gmail.com",
+		"divyareddyavula17@gmail.com",
+		"noothisrimulya@gmail.com",
+		"vijayintelli72@gmail.com",
+		"hajrafatima1212@gmail.com",
+		"imabdullah5978@gmail.com",
+		"mdsaif6304@gmail.com",
+		"vijaysuru620@gmail.com",
+		"palthisaketh93@gmail.com",
+		"rajnikita05@gmail.com",
+		"pranavpolawar123@gmail.com",
+		"dasarianjani1@gmail.com",
+		"anjali.gadikhana16@gmail.com",
+		"nagirimihira1960@gmail.com",
+		"gorantlasreeja589@gmail.com",
+		"rojaberi2005@gmail.com",
+		"swathi8379t@gmail.com",
+		"ravi2182003@gmail.com",
+		"sathvikrepala30@gmail.com",
+		"nalajalaabhi2004@gmail.com",
+		"22r01a67g0@cmrithyderabad.edu.in",
+		"charangoud3333@gmail.com",
+		"varunsaivarma8@gmail.com",
+		"shivanisweety102@gmail.com",
+		"nenavathkalyan300@gmail.com",
+		"patnammahesh75@gmail.com",
+		"sarayusiri15@gmail.com",
+		"22r01a67b2@gmail.com",
+		"mehulagarwal11111@gmail.com",
+		"chaturvediprabhu939@gmail.com",
+	}
 
-	query := `
+	// Construct the NOT IN clause for the SQL query
+	notInClause := "'" + strings.Join(emailedUsers, "', '") + "'"
+
+	query := fmt.Sprintf(`
 		SELECT u.id, u.name, u.email, pt.ticket_title 
 		FROM purchased_tickets pt
 		JOIN users u ON pt.user_id = u.id
-	`
+		WHERE u.email NOT IN (%s)
+		ORDER BY pt.id
+	`, notInClause)
 
 	rows, err := db.Query(query)
 	if err != nil {

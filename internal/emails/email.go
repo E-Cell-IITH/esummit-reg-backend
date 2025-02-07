@@ -88,7 +88,6 @@ func SendPASSEmail(to string, cc []string, subject string, body []byte, replyto 
 		return false, err
 	}
 	config.LogEmails(to, cc, subject, true)
-	log.Println("Email sent successfully!")
 	return true, nil
 }
 
@@ -250,31 +249,31 @@ func LoadPassEmailTemplate(name, pass, id string) ([]byte, error) {
 	htmlContent = strings.ReplaceAll(htmlContent, "{{.Name}}", name)
 	htmlContent = strings.ReplaceAll(htmlContent, "{{.Pass}}", pass)
 
-	data, err := generateBarcodeBase64(id)
-	if err != nil {
-		fmt.Printf("Failed to generate QR code: %v for id %s\n", err, id)
-		return nil, err
-	}
-	htmlContent = strings.ReplaceAll(htmlContent, "{{.QRDATA}}", "data:image/png;base64,"+data)
+	// data, err := generateBarcodeBase64(id)
+	// if err != nil {
+	// 	fmt.Printf("Failed to generate QR code: %v for id %s\n", err, id)
+	// 	return nil, err
+	// }
+	// htmlContent = strings.ReplaceAll(htmlContent, "{{.QRDATA}}", "data:image/png;base64,"+data)
 	htmlContent = strings.ReplaceAll(htmlContent, "{{.ALT}}", id)
 
-	imageBase64, err := loadImageBase64("templates/image.png")
-	if err != nil {
-		fmt.Printf("Failed to load image: %v\n", err)
-		return nil, err
-	}
-	htmlContent = strings.ReplaceAll(htmlContent, "{{.ImageBase64}}", imageBase64)
+	// imageBase64, err := loadImageBase64("templates/image.png")
+	// if err != nil {
+	// 	fmt.Printf("Failed to load image: %v\n", err)
+	// 	return nil, err
+	// }
+	// htmlContent = strings.ReplaceAll(htmlContent, "{{.ImageBase64}}", imageBase64)
 
 	return []byte(htmlContent), nil
 }
 
-func loadImageBase64(filePath string) (string, error) {
-	imageData, err := os.ReadFile(filePath)
-	if err != nil {
-		fmt.Printf("Error reading image file: %v\n", err)
-		return "", err
-	}
-	base64String := base64.StdEncoding.EncodeToString(imageData)
-	fmt.Printf("Base64 Image String: %s\n", base64String[:50]) // Print first 50 characters for debugging
-	return base64String, nil
-}
+// func loadImageBase64(filePath string) (string, error) {
+// 	imageData, err := os.ReadFile(filePath)
+// 	if err != nil {
+// 		fmt.Printf("Error reading image file: %v\n", err)
+// 		return "", err
+// 	}
+// 	base64String := base64.StdEncoding.EncodeToString(imageData)
+// 	fmt.Printf("Base64 Image String: %s\n", base64String[:50]) // Print first 50 characters for debugging
+// 	return base64String, nil
+// }
